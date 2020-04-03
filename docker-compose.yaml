@@ -57,4 +57,3 @@ services:
 networks: 
     imagem-laravel:
         driver: bridge
-        
