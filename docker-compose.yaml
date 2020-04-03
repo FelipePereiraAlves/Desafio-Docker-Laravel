@@ -4,28 +4,26 @@ services:
     app:
         build: .
         container_name: app
-        volumes:
+        volumes: 
             - .:/var/www
         networks: 
-            - publicando-Imagem-Laravel
+            - imagem-laravel
         depends_on: 
-            - db
-            - redis
-    
-    nginx:
+            db:
+                condition: service_healthy
+            
+    nginx: 
         build: .docker/nginx
         container_name: nginx
         restart: always
         tty: true
         ports: 
-            - "8080:80"
-        volumes:
+            - "8000:80"
+        volumes: 
             - .:/var/www
-        networks: 
-            - publicando-Imagem-Laravel
-        depends_on: 
-            - app
-    
+        networks:
+            - imagem-laravel
+
     db:
         image: mysql:5.7
         command: --innodb-use-native-aio=0
@@ -41,16 +39,22 @@ services:
             - MYSQL_ROOT_PASSWORD=root
             - MYSQL_USER=root
         networks: 
-            - publicando-Imagem-Laravel
+            - imagem-laravel
+        healthcheck:
+            test: ["CMD-SHELL", 'mysql -uroot --database=laravel --password=root 
+                --execute="SELECT count(table_name) > 0 FROM information_schema.tables;" --skip-column-names -B']
+            interval: 10s
+            timeout: 10s
+            retries: 4
 
     redis:
         image: redis:alpine
         expose:
             - 6379
         networks: 
-            - publicando-Imagem-Laravel
+            - imagem-laravel
 
 networks: 
-    publicando-Imagem-Laravel:
+    imagem-laravel:
         driver: bridge
         
